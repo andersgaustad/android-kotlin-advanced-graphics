@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
 import android.view.View
+import androidx.core.content.withStyledAttributes
 import com.example.android.customfancontroller.R
 import kotlin.math.cos
 import kotlin.math.min
@@ -29,10 +30,10 @@ private const val RADIUS_OFFSET_INDICATOR = -35
 
 class DialView @JvmOverloads constructor(
     context: Context,
-    attributes: AttributeSet? = null,
+    attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
 
-) : View(context, attributes, defStyleAttr) {
+) : View(context, attrs, defStyleAttr) {
 
     private var radius = 0.0f
     private var fanSpeed = FanSpeed.OFF
@@ -46,9 +47,21 @@ class DialView @JvmOverloads constructor(
         typeface = Typeface.create("", Typeface.BOLD)
     }
 
+    private var fanSpeedLowColor = 0
+    private var fanSpeedMediumColor = 0
+    private var fanSpeedMaxColor = 0
+
     // Init
     init {
+        // Make clickable
         isClickable = true
+
+        context.withStyledAttributes(attrs, R.styleable.DialView) {
+            fanSpeedLowColor = getColor(R.styleable.DialView_fanColor1, 0)
+            fanSpeedMediumColor = getColor(R.styleable.DialView_fanColor2, 0)
+            fanSpeedMaxColor = getColor(R.styleable.DialView_fanColor3, 0)
+        }
+
     }
 
     override fun performClick(): Boolean {
@@ -74,7 +87,12 @@ class DialView @JvmOverloads constructor(
             setBackgroundColor(0)
 
             // Change color
-            paint.color = if (fanSpeed == FanSpeed.OFF) Color.GRAY else Color.GREEN
+            paint.color = when (fanSpeed) {
+                FanSpeed.OFF -> Color.GRAY
+                FanSpeed.LOW -> fanSpeedLowColor
+                FanSpeed.MEDIUM -> fanSpeedMediumColor
+                FanSpeed.HIGH -> fanSpeedMaxColor
+            }
 
             // Draw circle
             canvas.drawCircle((width / 2).toFloat(), (height / 2).toFloat(), radius, paint)
